@@ -87,18 +87,27 @@
       <label>Archivo del Banco (.csv):</label> <input type="file" id="banco-file" accept=".csv">
       <button class="save-btn" style="background-color:#2c3e50; color:white;" onclick="procesarExtractoBnb()">Sincronizar Créditos y Débitos 🏦</button>
     </div>
-
-    <!-- SUB-MÓDULO 5: REPORTE DE CIERRE MENSUAL -->
+    <!-- SUB-MÓDULO 5: REPORTE DE CIERRE HISTÓRICO Y MOROSIDAD -->
     <div id="sec-rep" class="card-sur">
       <h3>Consejo de Cierres de Rendición</h3>
-      <button class="save-btn" style="background-color:#8e44ad; color:white;" onclick="emitirInformeCierre()">📊 Generar Informe de Cierre Mensual</button>
-      <div id="pantalla-reporte" style="margin-top:15px; padding:12px; background:#f8f9fa; border-left:4px solid #8e44ad; display:none; white-space:pre-wrap; font-size:13px; line-height:1.5;"></div>
+      <p style="font-size:12px; color:#7f8c8d; margin-top:-5px;">Selecciona el periodo exacto que deseas auditar o consulta la lista de deudas.</p>
+      
+      <label>Seleccionar Mes de Auditoría:</label>
+      <input type="month" id="reporte-mes-sel">
+      
+      <button class="save-btn" style="background-color:#27ae60; color:white;" onclick="emitirInformeCierre()">📊 Generar Informe de Cierre</button>
+      <button class="save-btn" style="background-color:#e74c3c; color:white; margin-top:8px;" onclick="emitirInformeMorosos()">⚠️ Consultar Lista de Morosos</button>
+      
+      <!-- Zona del Informe con Botón de Copiado Táctil -->
+      <div id="zona-reporte-salida" style="display:none; margin-top:15px; border-top:2px dashed #cbd5e0; padding-top:10px;">
+        <button class="save-btn" style="background-color:#34495e; color:white; margin-bottom:10px; font-size:13px;" onclick="copiarReporteSurWhatsApp()">📋 Copiar Reporte para WhatsApp</button>
+        <div id="pantalla-reporte" style="padding:12px; background:#f8f9fa; border-left:4px solid #8e44ad; white-space:pre-wrap; font-size:13px; line-height:1.5;"></div>
+      </div>
     </div>
-  </div>
   <script>
     // URL DE LA APLICACIÓN WEB DE LA CUENTA DEL SUR (GOOGLE APPS SCRIPT)
     // Recuerda reemplazar este texto por tu enlace largo de Apps Script
-    const WEB_APP_URL_SUR = "https://script.google.com/macros/s/AKfycbxPKivPcQm_LEdYegNbLnyk71vF3_lE5PiuPeGW6-Hc4ph08HP5BcrBIoZKgM9-OA5_/exec";
+    const WEB_APP_URL_SUR = "https://script.google.com/macros/s/AKfycbzl2Vr7SHdW6dXFigS8f4ZsY3o1e1J2bye55bo2dZT2pwCfJ-AalAWCwXnUevLLz4qG/exec";
 
     function verSubSeccion(id) {
       var secciones = document.getElementsByClassName("card-sur");
@@ -185,15 +194,61 @@
       lector.readAsText(fileInput.files);
     }
 
+    var textoReportePlanoSur = ""; // Contenedor global de memoria para el copiado rápido
+
     function emitirInformeCierre() {
+      var mesInput = document.getElementById("reporte-mes-sel").value;
+      var zona = document.getElementById("zona-reporte-salida");
       var p = document.getElementById("pantalla-reporte");
-      p.style.display = "block"; 
-      p.innerText = "Calculando estados de la Tierra y fondos...";
       
-      fetch(WEB_APP_URL_SUR)
+      // Si el usuario no selecciona un mes en el calendario, el sistema asume inteligentemente el mes de hoy
+      var parametroMes = mesInput ? mesInput : ""; 
+      
+      zona.style.display = "block";
+      p.innerText = "Sincronizando con el Altar de la Tierra y calculando balances...";
+      
+      fetch(WEB_APP_URL_SUR + "?mes=" + parametroMes)
         .then(res => res.json())
-        .then(data => { p.innerText = data.informe; })
-        .catch(() => { p.innerText = "Error generando el informe automático."; });
+        .then(data => { 
+          textoReportePlanoSur = data.informe;
+          // Formatear visualmente los asteriscos contables para que se vean estéticos en la pantalla de la PC/Móvil
+          p.innerHTML = data.informe.replace(/\*(.*?)\*/g, '<b>$1</b>');
+        })
+        .catch(() => { p.innerText = "Error generando el informe histórico."; });
+    }
+
+    function emitirInformeMorosos() {
+      var zona = document.getElementById("zona-reporte-salida");
+      var p = document.getElementById("pantalla-reporte");
+      
+      zona.style.display = "block";
+      p.innerText = "Cruzando bitácoras del día 21 para identificar pendientes...";
+      
+      fetch(WEB_APP_URL_SUR + "?tipo=morosos")
+        .then(res => res.json())
+        .then(data => { 
+          textoReportePlanoSur = data.informe;
+          p.innerHTML = data.informe.replace(/\*(.*?)\*/g, '<b>$1</b>');
+        })
+        .catch(() => { p.innerText = "Error leyendo la lista de morosidad."; });
+    }
+
+    function copiarReporteSurWhatsApp() {
+      if (!textoReportePlanoSur) { alert("Primero debes generar un informe en pantalla."); return; }
+      
+      // Crear un elemento de almacenamiento invisible para el portapapeles nativo del celular
+      var areaTemp = document.createElement("textarea");
+      areaTemp.value = textoReportePlanoSur;
+      document.body.appendChild(areaTemp);
+      areaTemp.select();
+      document.execCommand("copy");
+      document.body.removeChild(areaTemp);
+      
+      // Modificación didáctica del estado de alerta de tu pantalla
+      var box = document.getElementById("status-box");
+      box.innerText = "✅ ¡Cierre copiado al portapapeles! Ya puedes ir a WhatsApp y pegarlo.";
+      box.className = "ok"; box.style.display = "block";
+      window.scrollTo(0,0);
     }
   </script>
 </body>
