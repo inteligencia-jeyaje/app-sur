@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dirección Sur - Gestión de Recursos</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 12px; background-color: #f7f9fc; color: #333; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-top: 6px solid #d4b255; }
+    h2, h3 { text-align: center; color: #2c3e50; margin-top: 5px; }
+    .tabs-sur { display: flex; overflow-x: auto; background: #34495e; padding: 4px; border-radius: 8px; margin-bottom: 15px; gap: 4px; }
+    .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-size: 12px; font-weight: bold; color: #b2bec3; cursor: pointer; white-space: nowrap; text-align: center; border-radius: 4px; }
+    .tab-btn.active { background: #d4b255; color: #2c3e50; }
+    .card-sur { display: none; background: #fffcfc; border: 1px solid #f6f0df; padding: 15px; border-radius: 8px; }
+    .card-sur.active { display: block; }
+    label { display: block; margin: 10px 0 4px; font-size: 13px; font-weight: 600; color: #4a5568; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 5px; }
+    textarea { height: 60px; resize: none; }
+    button.save-btn { width: 100%; padding: 12px; background-color: #d4b255; color: #2c3e50; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    #status-box { text-align: center; padding: 10px; border-radius: 6px; font-weight: bold; display: none; margin-bottom: 12px; }
+    .ok { background-color: #e8f5e9; color: #2e7d32; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🌱 Dirección Sur (Tierra)</h2>
+    <div id="status-box"></div>
+
+    <!-- Menú de Sub-Módulos Contables -->
+    <div class="tabs-sur">
+      <button class="tab-btn active" id="b-caja" onclick="verSubSeccion('caja')">🪙 Caja</button>
+      <button class="tab-btn" id="b-inv" onclick="verSubSeccion('inv')">📦 Inv</button>
+      <button class="tab-btn" id="b-mov" onclick="verSubSeccion('mov')">🌾 Cosecha</button>
+      <button class="tab-btn" id="b-bnb" onclick="verSubSeccion('bnb')">🏦 BNB</button>
+      <button class="tab-btn" id="b-rep" onclick="verSubSeccion('rep')">📋 Cierre</button>
+    </div>
+
+    <!-- SUB-MÓDULO 1: CAJA CHICA -->
+    <div id="sec-caja" class="card-sur active">
+      <h3>Planilla de Caja Chica</h3>
+      <label>Concepto / Detalle:</label> <input type="text" id="caja-det" placeholder="Ej. Compra de carbones">
+      <label>Monto Ingreso (Bs.):</label> <input type="number" id="caja-ing" value="0">
+      <label>Monto Egreso (Bs.):</label> <input type="number" id="caja-egr" value="0">
+      <label>Nota Opcional:</label> <textarea id="caja-nota"></textarea>
+      <button class="save-btn" onclick="guardarCajaChica()">Registrar en Caja Chica</button>
+    </div>
+
+    <!-- SUB-MÓDULO 2: INVENTARIO POR LOTES -->
+    <div id="sec-inv" class="card-sur">
+      <h3>Control de Insumos</h3>
+      <label>Acción:</label>
+      <select id="inv-accion" onchange="document.getElementById('venc-row').style.display=this.value==='salida'?'none':'block'"><option value="ingreso">➕ Registrar Ingreso</option><option value="salida">📉 Registrar Salida (Gasto)</option></select>
+      <label>Producto:</label> <input type="text" id="inv-prod" placeholder="Ej. Copal Blanco">
+      <label>Cantidad (Kg / Unidades):</label> <input type="number" id="inv-cant" step="0.01">
+      <div id="venc-row"><label>Fecha de Vencimiento:</label> <input type="date" id="inv-venc"></div>
+      <label>Justificación / Observación:</label> <textarea id="inv-nota"></textarea>
+      <button class="save-btn" style="background-color:#2e3a4e; color:white;" onclick="guardarInventario()">Actualizar Stock Lote</button>
+    </div>
+    <!-- SUB-MÓDULO 3: COSECHA (APORTES Y OFRENDAS) -->
+    <div id="sec-mov" class="card-sur">
+      <h3>Aportes Mensuales de la Tribu</h3>
+      <label>Nombre del Sahumador(a):</label> <input type="text" id="ap-nombre">
+      <label>Mes Correspondiente:</label> <input type="text" id="ap-mes" placeholder="Ej. Septiembre 2026">
+      <label>Monto Fijo (Bs.):</label> <input type="number" id="ap-monto" value="100">
+      <label>Método:</label> <select id="ap-metodo"><option value="TRANSFERENCIA">Transferencia</option><option value="QR">QR</option><option value="EFECTIVO">Efectivo</option></select>
+      <button class="save-btn" onclick="guardarAporteTribu()">Asentar Aporte</button>
+
+      <div style="border-top:1px dashed #cbd5e0; margin-top:20px; padding-top:15px;">
+        <h3>Donaciones u Ofrendas Libres</h3>
+        <label>Nombre del Ofrendante (o Anónimo):</label> <input type="text" id="don-nombre" value="Anónimo">
+        <label>Monto Recaudado (Bs.):</label> <input type="number" id="don-monto">
+        <label>Método:</label> <select id="don-metodo"><option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option><option value="QR">QR</option></select>
+        <button class="save-btn" style="background-color:#27ae60; color:white;" onclick="guardarOfrenda()">Registrar Ofrenda</button>
+      </div>
+    </div>
+
+    <!-- SUB-MÓDULO 4: EXTRACTO BNB INTERFACES -->
+    <div id="sec-bnb" class="card-sur">
+      <h3>Sincronizador Automático BNB S.A.</h3>
+      <p style="font-size:12px; color:#7f8c8d;">Selecciona el archivo convertido en texto o CSV de tu extracto de cuenta bancaria.</p>
+      <label>Archivo del Banco (.csv):</label> <input type="file" id="banco-file" accept=".csv">
+      <button class="save-btn" style="background-color:#2c3e50; color:white;" onclick="procesarExtractoBnb()">Sincronizar Créditos y Débitos 🏦</button>
+    </div>
+
+    <!-- SUB-MÓDULO 5: REPORTE DE CIERRE MENSUAL -->
+    <div id="sec-rep" class="card-sur">
+      <h3>Consejo de Cierres de Rendición</h3>
+      <button class="save-btn" style="background-color:#8e44ad; color:white;" onclick="emitirInformeCierre()">📊 Generar Informe de Cierre Mensual</button>
+      <div id="pantalla-reporte" style="margin-top:15px; padding:12px; background:#f8f9fa; border-left:4px solid #8e44ad; display:none; white-space:pre-wrap; font-size:13px; line-height:1.5;"></div>
+    </div>
+  </div>
+
+  <script>
+    // URL DE LA APLICACIÓN WEB DE LA CUENTA DEL SUR (GOOGLE APPS SCRIPT)
+    const WEB_APP_URL_SUR = "PEGA_AQUÍ_TU_URL_DE_APPS_SCRIPT_DEL_SUR";
+
+    function verSubSeccion(id) {
+      var secciones = document.getElementsByClassName("card-sur");
+      var botones = document.getElementsByClassName("tab-btn");
+      for (var i = 0; i < secciones.length; i++) secciones[i].className = "card-sur";
+      for (var j = 0; j < botones.length; j++) botones[j].className = "tab-btn";
+      document.getElementById("sec-" + id).className = "card-sur active";
+      document.getElementById("b-" + id).className = "tab-btn active";
+      document.getElementById("status-box").style.display = "none";
+    }
+
+    function avisarEstado(txt) {
+      var box = document.getElementById("status-box");
+      box.innerText = txt; box.className = "ok"; box.style.display = "block";
+      window.scrollTo(0,0);
+    }
+
+    function transmitirSur(datos) {
+      avisarEstado("Sincronizando de forma segura con el altar del Sur...");
+      fetch(WEB_APP_URL_SUR, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+      }).then(function() {
+        avisarEstado("✅ Movimiento guardado con éxito en Google Sheets.");
+      });
+    }
+
+    function guardarCajaChica() {
+      transmitirSur({
+        target_sheet: "CajaChica", detalle: document.getElementById("caja-det").value,
+        ingreso: document.getElementById("caja-ing").value, egreso: document.getElementById("caja-egr").value,
+        nota: document.getElementById("caja-nota").value
+      });
+      document.getElementById("caja-det").value = ""; document.getElementById("caja-nota").value = "";
+    }
+
+    function guardarInventario() {
+      transmitirSur({
+        target_sheet: "Inventario", producto: document.getElementById("inv-prod").value,
+        cantidad: document.getElementById("inv-cant").value, tipo: "Insumo",
+        vencimiento: document.getElementById("inv-venc").value,
+        esSalida: (document.getElementById("inv-accion").value === "salida"),
+        nota: document.getElementById("inv-nota").value
+      });
+      document.getElementById("inv-prod").value = ""; document.getElementById("inv-nota").value = "";
+    }
+
+    function guardarAporteTribu() {
+      transmitirSur({
+        target_sheet: "Aportes", sahumador: document.getElementById("ap-nombre").value,
+        mes: document.getElementById("ap-mes").value, monto: document.getElementById("ap-monto").value,
+        metodo: document.getElementById("ap-metodo").value
+      });
+      document.getElementById("ap-nombre").value = "";
+    }
+
+    function guardarOfrenda() {
+      transmitirSur({
+        target_sheet: "Donaciones", nombre: document.getElementById("don-nombre").value,
+        monto: document.getElementById("don-monto").value, metodo: document.getElementById("don-metodo").value
+      });
+      document.getElementById("don-monto").value = "";
+    }
+
+    function拦截procesarExtractoBnb() {
+      var fileInput = document.getElementById("banco-file");
+      if (fileInput.files.length === 0) { alert("Selecciona un archivo .csv primero."); return; }
+      var lector = new FileReader();
+      lector.onload = function(e) {
+        transmitirSur({ target_sheet: "BancoExtracto", csv_data: e.target.result });
+      };
+      lector.readAsText(fileInput.files);
+    }
+
+    function emitirInformeCierre() {
+      var p = document.getElementById("pantalla-reporte");
+      p.style.display = "block"; p.innerText = "Calculando estados de la Tierra y fondos...";
+      fetch(WEB_APP_URL_SUR)
+        .then(res => res.json())
+        .then(data => { p.innerText = data.informe; })
+        .catch(() => { p.innerText = "Error generando el informe automático."; });
+    }
+  </script>
+</body>
+</html>
