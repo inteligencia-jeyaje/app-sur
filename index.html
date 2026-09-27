@@ -9,7 +9,7 @@
     .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-top: 6px solid #d4b255; }
     h2, h3 { text-align: center; color: #2c3e50; margin-top: 5px; }
     .tabs-sur { display: flex; overflow-x: auto; background: #34495e; padding: 4px; border-radius: 8px; margin-bottom: 15px; gap: 4px; }
-    .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-size: 12px; font-weight: bold; color: #b2bec3; cursor: pointer; white-space: nowrap; text-align: center; border-radius: 4px; }
+    .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-size: 13px; font-weight: bold; color: #b2bec3; cursor: pointer; white-space: nowrap; text-align: center; border-radius: 4px; }
     .tab-btn.active { background: #d4b255; color: #2c3e50; }
     .card-sur { display: none; background: #fffcfc; border: 1px solid #f6f0df; padding: 15px; border-radius: 8px; }
     .card-sur.active { display: block; }
@@ -27,7 +27,7 @@
     <h2>🌱 Dirección Sur (Tierra)</h2>
     <div id="status-box"></div>
 
-    <!-- Menú de Sub-Módulos Contables -->
+    <!-- Menú de Navegación Táctil -->
     <div class="tabs-sur">
       <button class="tab-btn active" id="b-caja" onclick="verSubSeccion('caja')">🪙 Caja</button>
       <button class="tab-btn" id="b-inv" onclick="verSubSeccion('inv')">📦 Inv</button>
@@ -35,7 +35,6 @@
       <button class="tab-btn" id="b-bnb" onclick="verSubSeccion('bnb')">🏦 BNB</button>
       <button class="tab-btn" id="b-rep" onclick="verSubSeccion('rep')">📋 Cierre</button>
     </div>
-
     <!-- SUB-MÓDULO 1: CAJA CHICA -->
     <div id="sec-caja" class="card-sur active">
       <h3>Planilla de Caja Chica</h3>
@@ -57,25 +56,31 @@
       <label>Justificación / Observación:</label> <textarea id="inv-nota"></textarea>
       <button class="save-btn" style="background-color:#2e3a4e; color:white;" onclick="guardarInventario()">Actualizar Stock Lote</button>
     </div>
+
     <!-- SUB-MÓDULO 3: COSECHA (APORTES Y OFRENDAS) -->
     <div id="sec-mov" class="card-sur">
       <h3>Aportes Mensuales de la Tribu</h3>
       <label>Nombre del Sahumador(a):</label> <input type="text" id="ap-nombre">
       <label>Mes Correspondiente:</label> <input type="text" id="ap-mes" placeholder="Ej. Septiembre 2026">
       <label>Monto Fijo (Bs.):</label> <input type="number" id="ap-monto" value="100">
-      <label>Método:</label> <select id="ap-metodo"><option value="TRANSFERENCIA">Transferencia</option><option value="QR">QR</option><option value="EFECTIVO">Efectivo</option></select>
-      <button class="save-btn" onclick="guardarAporteTribu()">Asentar Aporte</button>
+      <label>Método:</label> 
+      <select id="ap-metodo">
+        <option value="TRANSFERENCIA">Transferencia</option>
+        <option value="QR">QR</option>
+        <option value="EFECTIVO">Efectivo</option>
+      </select>
+      <button class="save-btn" style="background-color:#27ae60; color:white;" onclick="guardarAporteTribu()">Asentar Aporte de Tribu 👥</button>
 
       <div style="border-top:1px dashed #cbd5e0; margin-top:20px; padding-top:15px;">
         <h3>Donaciones u Ofrendas Libres</h3>
         <label>Nombre del Ofrendante (o Anónimo):</label> <input type="text" id="don-nombre" value="Anónimo">
         <label>Monto Recaudado (Bs.):</label> <input type="number" id="don-monto">
         <label>Método:</label> <select id="don-metodo"><option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option><option value="QR">QR</option></select>
-        <button class="save-btn" style="background-color:#27ae60; color:white;" onclick="guardarOfrenda()">Registrar Ofrenda</button>
+        <button class="save-btn" style="background-color:#2980b9; color:white;" onclick="guardarOfrenda()">Registrar Ofrenda Comunidad 🎁</button>
       </div>
     </div>
 
-    <!-- SUB-MÓDULO 4: EXTRACTO BNB INTERFACES -->
+    <!-- SUB-MÓDULO 4: EXTRACTO BNB -->
     <div id="sec-bnb" class="card-sur">
       <h3>Sincronizador Automático BNB S.A.</h3>
       <p style="font-size:12px; color:#7f8c8d;">Selecciona el archivo convertido en texto o CSV de tu extracto de cuenta bancaria.</p>
@@ -90,9 +95,9 @@
       <div id="pantalla-reporte" style="margin-top:15px; padding:12px; background:#f8f9fa; border-left:4px solid #8e44ad; display:none; white-space:pre-wrap; font-size:13px; line-height:1.5;"></div>
     </div>
   </div>
-
   <script>
     // URL DE LA APLICACIÓN WEB DE LA CUENTA DEL SUR (GOOGLE APPS SCRIPT)
+    // Recuerda reemplazar este texto por tu enlace largo de Apps Script
     const WEB_APP_URL_SUR = "https://script.google.com/macros/s/AKfycbxPKivPcQm_LEdYegNbLnyk71vF3_lE5PiuPeGW6-Hc4ph08HP5BcrBIoZKgM9-OA5_/exec";
 
     function verSubSeccion(id) {
@@ -125,28 +130,36 @@
 
     function guardarCajaChica() {
       transmitirSur({
-        target_sheet: "CajaChica", detalle: document.getElementById("caja-det").value,
-        ingreso: document.getElementById("caja-ing").value, egreso: document.getElementById("caja-egr").value,
+        target_sheet: "CajaChica", 
+        detalle: document.getElementById("caja-det").value,
+        ingreso: document.getElementById("caja-ing").value, 
+        egreso: document.getElementById("caja-egr").value,
         nota: document.getElementById("caja-nota").value
       });
-      document.getElementById("caja-det").value = ""; document.getElementById("caja-nota").value = "";
+      document.getElementById("caja-det").value = ""; 
+      document.getElementById("caja-nota").value = "";
     }
 
     function guardarInventario() {
       transmitirSur({
-        target_sheet: "Inventario", producto: document.getElementById("inv-prod").value,
-        cantidad: document.getElementById("inv-cant").value, tipo: "Insumo",
+        target_sheet: "Inventario", 
+        producto: document.getElementById("inv-prod").value,
+        cantidad: document.getElementById("inv-cant").value, 
+        tipo: "Insumo",
         vencimiento: document.getElementById("inv-venc").value,
         esSalida: (document.getElementById("inv-accion").value === "salida"),
         nota: document.getElementById("inv-nota").value
       });
-      document.getElementById("inv-prod").value = ""; document.getElementById("inv-nota").value = "";
+      document.getElementById("inv-prod").value = ""; 
+      document.getElementById("inv-nota").value = "";
     }
 
     function guardarAporteTribu() {
       transmitirSur({
-        target_sheet: "Aportes", sahumador: document.getElementById("ap-nombre").value,
-        mes: document.getElementById("ap-mes").value, monto: document.getElementById("ap-monto").value,
+        target_sheet: "Aportes", 
+        sahumador: document.getElementById("ap-nombre").value,
+        mes: document.getElementById("ap-mes").value, 
+        monto: document.getElementById("ap-monto").value,
         metodo: document.getElementById("ap-metodo").value
       });
       document.getElementById("ap-nombre").value = "";
@@ -154,13 +167,15 @@
 
     function guardarOfrenda() {
       transmitirSur({
-        target_sheet: "Donaciones", nombre: document.getElementById("don-nombre").value,
-        monto: document.getElementById("don-monto").value, metodo: document.getElementById("don-metodo").value
+        target_sheet: "Donaciones", 
+        nombre: document.getElementById("don-nombre").value,
+        monto: document.getElementById("don-monto").value, 
+        metodo: document.getElementById("don-metodo").value
       });
       document.getElementById("don-monto").value = "";
     }
 
-    function拦截procesarExtractoBnb() {
+    function procesarExtractoBnb() {
       var fileInput = document.getElementById("banco-file");
       if (fileInput.files.length === 0) { alert("Selecciona un archivo .csv primero."); return; }
       var lector = new FileReader();
@@ -172,7 +187,9 @@
 
     function emitirInformeCierre() {
       var p = document.getElementById("pantalla-reporte");
-      p.style.display = "block"; p.innerText = "Calculando estados de la Tierra y fondos...";
+      p.style.display = "block"; 
+      p.innerText = "Calculando estados de la Tierra y fondos...";
+      
       fetch(WEB_APP_URL_SUR)
         .then(res => res.json())
         .then(data => { p.innerText = data.informe; })
