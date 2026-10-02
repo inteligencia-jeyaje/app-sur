@@ -35,6 +35,7 @@
       <button class="tab-btn" id="b-bnb" onclick="verSubSeccion('bnb')">🏦 BNB</button>
       <button class="tab-btn" id="b-rep" onclick="verSubSeccion('rep')">📋 Cierre</button>
     </div>
+
     <!-- SUB-MÓDULO 1: CAJA CHICA -->
     <div id="sec-caja" class="card-sur active">
       <h3>Planilla de Caja Chica</h3>
@@ -57,7 +58,7 @@
       <button class="save-btn" style="background-color:#2e3a4e; color:white;" onclick="guardarInventario()">Actualizar Stock Lote</button>
     </div>
 
-    <!-- SUB-MÓDULO 3: COSECHA (APORTES Y OFRENDAS) -->
+    <!-- SUB-MÓDULO 3: COSECHA (APORTES Y OFRENDAS CON DISCRIMINACIÓN DE MOTIVOS) -->
     <div id="sec-mov" class="card-sur">
       <h3>Aportes Mensuales de la Tribu</h3>
       <label>Nombre del Sahumador(a):</label> <input type="text" id="ap-nombre">
@@ -72,11 +73,21 @@
       <button class="save-btn" style="background-color:#27ae60; color:white;" onclick="guardarAporteTribu()">Asentar Aporte de Tribu 👥</button>
 
       <div style="border-top:1px dashed #cbd5e0; margin-top:20px; padding-top:15px;">
-        <h3>Donaciones u Ofrendas Libres</h3>
-        <label>Nombre del Ofrendante (o Anónimo):</label> <input type="text" id="don-nombre" value="Anónimo">
+        <h3>Otros Ingresos y Ofrendas Libres</h3>
+        <label>Nombre del Ofrendante (o Canal):</label> <input type="text" id="don-nombre" value="Ofrenda Abierta">
+        
+        <!-- CASILLA DISCRIMINATORIA AGREGADA AQUÍ PARA EL INFORME ANUAL -->
+        <label>Motivo o Categoría del Ingreso:</label> 
+        <select id="don-motivo">
+          <option value="Donación / Ofrenda Voluntaria">🎁 Donación / Ofrenda Voluntaria</option>
+          <option value="Venta de Cancionero Jeyajé">📖 Venta de Cancionero Jeyajé</option>
+          <option value="Taller de Elaboración de Ofrendas">🎓 Taller de Elaboración de Ofrendas</option>
+          <option value="Otros Ingresos de Altar">✨ Otros Ingresos de Altar</option>
+        </select>
+
         <label>Monto Recaudado (Bs.):</label> <input type="number" id="don-monto">
         <label>Método:</label> <select id="don-metodo"><option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option><option value="QR">QR</option></select>
-        <button class="save-btn" style="background-color:#2980b9; color:white;" onclick="guardarOfrenda()">Registrar Ofrenda Comunidad 🎁</button>
+        <button class="save-btn" style="background-color:#2980b9; color:white;" onclick="guardarOfrenda()">Registrar Ingreso en Cosecha 🎁</button>
       </div>
     </div>
 
@@ -87,27 +98,24 @@
       <label>Archivo del Banco (.csv):</label> <input type="file" id="banco-file" accept=".csv">
       <button class="save-btn" style="background-color:#2c3e50; color:white;" onclick="procesarExtractoBnb()">Sincronizar Créditos y Débitos 🏦</button>
     </div>
+
     <!-- SUB-MÓDULO 5: REPORTE DE CIERRE HISTÓRICO Y MOROSIDAD -->
     <div id="sec-rep" class="card-sur">
       <h3>Consejo de Cierres de Rendición</h3>
-      <p style="font-size:12px; color:#7f8c8d; margin-top:-5px;">Selecciona el periodo exacto que deseas auditar o consulta la lista de deudas.</p>
-      
-      <label>Seleccionar Mes de Auditoría:</label>
-      <input type="month" id="reporte-mes-sel">
-      
+      <label>Seleccionar Mes de Auditoría:</label> <input type="month" id="reporte-mes-sel">
       <button class="save-btn" style="background-color:#27ae60; color:white;" onclick="emitirInformeCierre()">📊 Generar Informe de Cierre</button>
       <button class="save-btn" style="background-color:#e74c3c; color:white; margin-top:8px;" onclick="emitirInformeMorosos()">⚠️ Consultar Lista de Morosos</button>
       
-      <!-- Zona del Informe con Botón de Copiado Táctil -->
       <div id="zona-reporte-salida" style="display:none; margin-top:15px; border-top:2px dashed #cbd5e0; padding-top:10px;">
         <button class="save-btn" style="background-color:#34495e; color:white; margin-bottom:10px; font-size:13px;" onclick="copiarReporteSurWhatsApp()">📋 Copiar Reporte para WhatsApp</button>
         <div id="pantalla-reporte" style="padding:12px; background:#f8f9fa; border-left:4px solid #8e44ad; white-space:pre-wrap; font-size:13px; line-height:1.5;"></div>
       </div>
     </div>
+  </div>
   <script>
     // URL DE LA APLICACIÓN WEB DE LA CUENTA DEL SUR (GOOGLE APPS SCRIPT)
-    // Recuerda reemplazar este texto por tu enlace largo de Apps Script
-    const WEB_APP_URL_SUR = "https://script.google.com/macros/s/AKfycbzl2Vr7SHdW6dXFigS8f4ZsY3o1e1J2bye55bo2dZT2pwCfJ-AalAWCwXnUevLLz4qG/exec";
+    const WEB_APP_URL_SUR = "https://script.google.com/macros/s/AKfycbxTpWmvRGysrESbpLJ29aG9cEuxIc7BhSrvGKBTnEh7a1haifjq7zLoDaq3tuPaVctd/exec";
+    var textoReportePlanoSur = "";
 
     function verSubSeccion(id) {
       var secciones = document.getElementsByClassName("card-sur");
@@ -139,36 +147,28 @@
 
     function guardarCajaChica() {
       transmitirSur({
-        target_sheet: "CajaChica", 
-        detalle: document.getElementById("caja-det").value,
-        ingreso: document.getElementById("caja-ing").value, 
-        egreso: document.getElementById("caja-egr").value,
+        target_sheet: "CajaChica", detalle: document.getElementById("caja-det").value,
+        ingreso: document.getElementById("caja-ing").value, egreso: document.getElementById("caja-egr").value,
         nota: document.getElementById("caja-nota").value
       });
-      document.getElementById("caja-det").value = ""; 
-      document.getElementById("caja-nota").value = "";
+      document.getElementById("caja-det").value = ""; document.getElementById("caja-nota").value = "";
     }
 
     function guardarInventario() {
       transmitirSur({
-        target_sheet: "Inventario", 
-        producto: document.getElementById("inv-prod").value,
-        cantidad: document.getElementById("inv-cant").value, 
-        tipo: "Insumo",
+        target_sheet: "Inventario", producto: document.getElementById("inv-prod").value,
+        cantidad: document.getElementById("inv-cant").value, tipo: "Insumo",
         vencimiento: document.getElementById("inv-venc").value,
         esSalida: (document.getElementById("inv-accion").value === "salida"),
         nota: document.getElementById("inv-nota").value
       });
-      document.getElementById("inv-prod").value = ""; 
-      document.getElementById("inv-nota").value = "";
+      document.getElementById("inv-prod").value = ""; document.getElementById("inv-nota").value = "";
     }
 
     function guardarAporteTribu() {
       transmitirSur({
-        target_sheet: "Aportes", 
-        sahumador: document.getElementById("ap-nombre").value,
-        mes: document.getElementById("ap-mes").value, 
-        monto: document.getElementById("ap-monto").value,
+        target_sheet: "Aportes", sahumador: document.getElementById("ap-nombre").value,
+        mes: document.getElementById("ap-mes").value, monto: document.getElementById("ap-monto").value,
         metodo: document.getElementById("ap-metodo").value
       });
       document.getElementById("ap-nombre").value = "";
@@ -179,7 +179,8 @@
         target_sheet: "Donaciones", 
         nombre: document.getElementById("don-nombre").value,
         monto: document.getElementById("don-monto").value, 
-        metodo: document.getElementById("don-metodo").value
+        metodo: document.getElementById("don-metodo").value,
+        motivo: document.getElementById("don-motivo").value // Captura de motivo discriminado
       });
       document.getElementById("don-monto").value = "";
     }
@@ -194,24 +195,19 @@
       lector.readAsText(fileInput.files);
     }
 
-    var textoReportePlanoSur = ""; // Contenedor global de memoria para el copiado rápido
-
     function emitirInformeCierre() {
       var mesInput = document.getElementById("reporte-mes-sel").value;
       var zona = document.getElementById("zona-reporte-salida");
       var p = document.getElementById("pantalla-reporte");
-      
-      // Si el usuario no selecciona un mes en el calendario, el sistema asume inteligentemente el mes de hoy
       var parametroMes = mesInput ? mesInput : ""; 
       
       zona.style.display = "block";
-      p.innerText = "Sincronizando con el Altar de la Tierra y calculando balances...";
+      p.innerText = "Sincronizando balances e hilos contables...";
       
       fetch(WEB_APP_URL_SUR + "?mes=" + parametroMes)
         .then(res => res.json())
         .then(data => { 
           textoReportePlanoSur = data.informe;
-          // Formatear visualmente los asteriscos contables para que se vean estéticos en la pantalla de la PC/Móvil
           p.innerHTML = data.informe.replace(/\*(.*?)\*/g, '<b>$1</b>');
         })
         .catch(() => { p.innerText = "Error generando el informe histórico."; });
@@ -220,33 +216,27 @@
     function emitirInformeMorosos() {
       var zona = document.getElementById("zona-reporte-salida");
       var p = document.getElementById("pantalla-reporte");
-      
       zona.style.display = "block";
-      p.innerText = "Cruzando bitácoras del día 21 para identificar pendientes...";
-      
+      p.innerText = "Calculando pendientes trimestrales...";
       fetch(WEB_APP_URL_SUR + "?tipo=morosos")
         .then(res => res.json())
         .then(data => { 
           textoReportePlanoSur = data.informe;
           p.innerHTML = data.informe.replace(/\*(.*?)\*/g, '<b>$1</b>');
         })
-        .catch(() => { p.innerText = "Error leyendo la lista de morosidad."; });
+        .catch(() => { p.innerText = "Error leyendo deudas."; });
     }
 
     function copiarReporteSurWhatsApp() {
-      if (!textoReportePlanoSur) { alert("Primero debes generar un informe en pantalla."); return; }
-      
-      // Crear un elemento de almacenamiento invisible para el portapapeles nativo del celular
+      if (!textoReportePlanoSur) { alert("Genera un informe primero."); return; }
       var areaTemp = document.createElement("textarea");
       areaTemp.value = textoReportePlanoSur;
       document.body.appendChild(areaTemp);
       areaTemp.select();
       document.execCommand("copy");
       document.body.removeChild(areaTemp);
-      
-      // Modificación didáctica del estado de alerta de tu pantalla
       var box = document.getElementById("status-box");
-      box.innerText = "✅ ¡Cierre copiado al portapapeles! Ya puedes ir a WhatsApp y pegarlo.";
+      box.innerText = "✅ ¡Cierre copiado! Listo para pegar en WhatsApp.";
       box.className = "ok"; box.style.display = "block";
       window.scrollTo(0,0);
     }
