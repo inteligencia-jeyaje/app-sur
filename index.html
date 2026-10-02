@@ -58,7 +58,7 @@
       <button class="save-btn" style="background-color:#2e3a4e; color:white;" onclick="guardarInventario()">Actualizar Stock Lote</button>
     </div>
 
-    <!-- SUB-MÓDULO 3: COSECHA (APORTES Y OFRENDAS CON DISCRIMINACIÓN DE MOTIVOS) -->
+    <!-- SUB-MÓDULO 3: COSECHA (APORTES Y OFRENDAS CON MOTIVOS DE TEXTO LIBRE) -->
     <div id="sec-mov" class="card-sur">
       <h3>Aportes Mensuales de la Tribu</h3>
       <label>Nombre del Sahumador(a):</label> <input type="text" id="ap-nombre">
@@ -76,14 +76,9 @@
         <h3>Otros Ingresos y Ofrendas Libres</h3>
         <label>Nombre del Ofrendante (o Canal):</label> <input type="text" id="don-nombre" value="Ofrenda Abierta">
         
-        <!-- CASILLA DISCRIMINATORIA AGREGADA AQUÍ PARA EL INFORME ANUAL -->
-        <label>Motivo o Categoría del Ingreso:</label> 
-        <select id="don-motivo">
-          <option value="Donación / Ofrenda Voluntaria">🎁 Donación / Ofrenda Voluntaria</option>
-          <option value="Venta de Cancionero Jeyajé">📖 Venta de Cancionero Jeyajé</option>
-          <option value="Taller de Elaboración de Ofrendas">🎓 Taller de Elaboración de Ofrendas</option>
-          <option value="Otros Ingresos de Altar">✨ Otros Ingresos de Altar</option>
-        </select>
+        <!-- CORRECCIÓN MAESTRA: CASILLA DE TEXTO LIBRE ABIERTA -->
+        <label>Motivo, Taller o Concepto del Ingreso:</label> 
+        <input type="text" id="don-motivo" placeholder="Ej. Venta de Cancionero, Taller de Ofrendas, etc.">
 
         <label>Monto Recaudado (Bs.):</label> <input type="number" id="don-monto">
         <label>Método:</label> <select id="don-metodo"><option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option><option value="QR">QR</option></select>
